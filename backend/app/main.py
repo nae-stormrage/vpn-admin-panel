@@ -1,5 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncSession
+from .database import get_db, engine
+from .models import Base, User
+from sqlalchemy.future import select
+
+import asyncio
 
 app = FastAPI(title="VPN Admin API")
 
@@ -11,6 +17,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
 @app.get("/api/status")
-def get_status():
+async def get_status():
     return {"status": "ok", "message": "Backend is running"}
+
+@app.get("/api/users")
+async def get_users(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User))
+    users = result.scalars().all()
+    return {"users": [ {"id": u.id, "username": u.username, "active": u.active} for u in users ]}
