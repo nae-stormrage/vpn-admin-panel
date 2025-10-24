@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db, engine
-from models import User
+from models import Base, User
 from sqlalchemy.future import select
 import asyncio
 
