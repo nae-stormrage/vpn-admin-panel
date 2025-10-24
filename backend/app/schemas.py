@@ -1,20 +1,13 @@
 from pydantic import BaseModel
-from typing import Optional
 
-class UserCreate(BaseModel):
+class VPNUserCreate(BaseModel):
     username: str
-    vpn_key: str
-    active: Optional[bool] = True
 
-class UserUpdate(BaseModel):
-    username: Optional[str] = None
-    vpn_key: Optional[str] = None
-    active: Optional[bool] = None
-
-class UserOut(BaseModel):
+class VPNUserOut(BaseModel):
     id: int
     username: str
-    active: bool
+    public_key: str
+    config_file: str
 
     class Config:
         orm_mode = True

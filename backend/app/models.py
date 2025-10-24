@@ -1,12 +1,11 @@
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+from .database import Base
 
-Base = declarative_base()
-
-class User(Base):
-    __tablename__ = "users"
+class VPNUser(Base):
+    __tablename__ = "vpn_users"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    vpn_key = Column(String)
-    active = Column(Boolean, default=True)
+    public_key = Column(String, unique=True)
+    private_key = Column(String, unique=True)
+    config_file = Column(String, unique=True)

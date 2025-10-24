@@ -1,66 +1,26 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from database import get_db, engine
-from models import Base, User
-from schemas import UserCreate, UserUpdate, UserOut
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
+import models, schemas, database, vpn_manager
 
-app = FastAPI(title="VPN Admin API")
+models.Base.metadata.create_all(bind=database.engine)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(title="VPN Admin Panel")
 
-@app.on_event("startup")
-async def startup():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+app.mount("/configs", StaticFiles(directory="wg_configs"), name="configs")
 
-@app.get("/api/status")
-async def get_status():
-    return {"status": "ok", "message": "Backend is running"}
-
-@app.get("/api/users", response_model=list[UserOut])
-async def get_users(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User))
-    users = result.scalars().all()
-    return users
-
-@app.post("/api/users", response_model=UserOut)
-async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    db_user = User(username=user.username, vpn_key=user.vpn_key, active=user.active)
+@app.post("/api/users/", response_model=schemas.VPNUserOut)
+def create_user(user: schemas.VPNUserCreate, db: Session = Depends(database.get_db)):
+    existing = db.query(models.VPNUser).filter(models.VPNUser.username == user.username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    vpn_data = vpn_manager.create_vpn_user(user.username)
+    db_user = models.VPNUser(**vpn_data)
     db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
+    db.commit()
+    db.refresh(db_user)
     return db_user
 
-@app.put("/api/users/{user_id}", response_model=UserOut)
-async def update_user(user_id: int, user: UserUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.id == user_id))
-    db_user = result.scalars().first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.username is not None:
-        db_user.username = user.username
-    if user.vpn_key is not None:
-        db_user.vpn_key = user.vpn_key
-    if user.active is not None:
-        db_user.active = user.active
-    await db.commit()
-    await db.refresh(db_user)
-    return db_user
-
-@app.delete("/api/users/{user_id}", response_model=dict)
-async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.id == user_id))
-    db_user = result.scalars().first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    await db.delete(db_user)
-    await db.commit()
-    return {"detail": "User deleted"}
+@app.get("/api/users/", response_model=list[schemas.VPNUserOut])
+def list_users(db: Session = Depends(database.get_db)):
+    return db.query(models.VPNUser).all()

@@ -1,55 +1,51 @@
-const API_URL = "/api/users";
+const API_URL = '/api/users/';
 
 async function fetchUsers() {
     const res = await fetch(API_URL);
     const users = await res.json();
-    const tbody = document.querySelector("#usersTable tbody");
-    tbody.innerHTML = "";
-    users.forEach(u => {
-        const tr = document.createElement("tr");
+    const table = document.getElementById('usersTable');
+    table.innerHTML = '';
+
+    users.forEach(user => {
+        const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${u.id}</td>
-            <td><input value="${u.username}" onchange="updateUser(${u.id}, this.value)"></td>
-            <td><input type="checkbox" ${u.active ? "checked" : ""} onchange="toggleActive(${u.id}, this.checked)"></td>
-            <td><button onclick="deleteUser(${u.id})">Delete</button></td>
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.public_key}</td>
+            <td><a href="${user.config_file}" target="_blank">Download</a></td>
+            <td><canvas class="qr"></canvas></td>
         `;
-        tbody.appendChild(tr);
+        table.appendChild(tr);
+
+        const qr = new QRious({
+            element: tr.querySelector('canvas'),
+            value: fetchConfig(user.config_file),
+            size: 100
+        });
     });
 }
 
-async function addUser() {
-    const username = document.getElementById("newUsername").value;
-    const vpnKey = document.getElementById("newVpnKey").value;
-    await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, vpn_key: vpnKey })
-    });
-    document.getElementById("newUsername").value = "";
-    document.getElementById("newVpnKey").value = "";
-    fetchUsers();
+async function fetchConfig(url) {
+    const res = await fetch(url);
+    if (!res.ok) return '';
+    return await res.text();
 }
 
-async function updateUser(id, username) {
-    await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username })
     });
-}
 
-async function toggleActive(id, active) {
-    await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ active })
-    });
-}
+    if (res.ok) {
+        document.getElementById('username').value = '';
+        fetchUsers();
+    } else {
+        alert('Error adding user');
+    }
+});
 
-async function deleteUser(id) {
-    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-    fetchUsers();
-}
-
-// Initial load
 fetchUsers();
