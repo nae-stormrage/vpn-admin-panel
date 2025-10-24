@@ -1,10 +1,9 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_db, engine
-from app.models import User
+from database import get_db, engine
+from models import User
 from sqlalchemy.future import select
-
 import asyncio
 
 app = FastAPI(title="VPN Admin API")

@@ -8,7 +8,7 @@ Web-панель администрирования VPN сервиса на ос
 
 ## 🚀 Запуск проекта
 
-```bash
+```shell
 git clone https://github.com/nae-stormrage/vpn-admin-panel.git
 cd vpn-admin-panel
 docker-compose up --build
