@@ -50,6 +50,7 @@ services:
   amnezia:
     build: ./amnezia-container
     container_name: amnezia
+    privileged: true
     env_file:
       - .env
     volumes:
