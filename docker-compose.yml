@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./backend
+    container_name: vpn-backend
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: vpn-frontend
+
+  nginx:
+    build: ./nginx
+    container_name: vpn-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend

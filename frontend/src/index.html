@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VPN Admin Panel</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; }
+        h1 { color: #2563eb; }
+        .status { margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <h1>VPN Admin Panel</h1>
+    <p>Привет! Это фронтенд будущей админ-панели.</p>
+    <button onclick="checkStatus()">Проверить статус API</button>
+    <div class="status" id="status"></div>
+
+    <script>
+        async function checkStatus() {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            document.getElementById('status').innerText = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
