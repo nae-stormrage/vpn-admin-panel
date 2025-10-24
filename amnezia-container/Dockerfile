@@ -2,8 +2,7 @@ FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y \
     build-essential dkms linux-headers-$(uname -r) \
-    git iproute2 iptables wireguard-tools curl ca-certificates sudo bash \
-    && apt-get clean
+    git iproute2 iptables wireguard-tools curl ca-certificates sudo bash
 
 RUN git clone https://github.com/amnezia-vpn/amneziawg-linux-kernel-module /tmp/amnezia-mod
 WORKDIR /tmp/amnezia-mod
