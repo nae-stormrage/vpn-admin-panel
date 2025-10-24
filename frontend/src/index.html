@@ -4,23 +4,33 @@
     <meta charset="UTF-8">
     <title>VPN Admin Panel</title>
     <style>
-        body { font-family: sans-serif; padding: 2rem; }
-        h1 { color: #2563eb; }
-        .status { margin-top: 1rem; }
+        table { border-collapse: collapse; width: 60%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { margin-right: 5px; }
     </style>
 </head>
 <body>
     <h1>VPN Admin Panel</h1>
-    <p>Привет! Это фронтенд будущей админ-панели.</p>
-    <button onclick="checkStatus()">Проверить статус API</button>
-    <div class="status" id="status"></div>
 
-    <script>
-        async function checkStatus() {
-            const res = await fetch('/api/status');
-            const data = await res.json();
-            document.getElementById('status').innerText = JSON.stringify(data, null, 2);
-        }
-    </script>
+    <h2>Users</h2>
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Add New User</h3>
+    <input type="text" id="newUsername" placeholder="Username">
+    <input type="text" id="newVpnKey" placeholder="VPN Key">
+    <button onclick="addUser()">Add User</button>
+
+    <script src="script.js"></script>
 </body>
 </html>
